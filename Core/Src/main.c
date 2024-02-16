@@ -72,6 +72,7 @@ static void MX_TIM6_Init(void);
 void my_gnss_sw_on ( void ) ;
 void my_gnss_sw_off ( void ) ;
 unsigned char q1_check_xor ( const uint8_t* , uint8_t ) ;
+void send_command ( const char* , bool ) ;
 void my_ant_sw_pos ( uint8_t ) ;
 void my_tim_init ( void ) ;
 void my_tim_start ( void ) ;
@@ -118,6 +119,8 @@ int main(void)
   HAL_Delay ( 5000 ) ;
   my_tim_init () ;
   HAL_UART_Transmit ( &huart2 , hello , strlen ( hello ) , UART2_TX_TIMEOUT ) ;
+
+  send_command ( get_nmea_br , false ) ;
 
 //  char cs = q1_check_xor ( nmea_br_9600 , strlen ( nmea_br_9600 ) ) ;
 //  sprintf ( res , "$%s*%X\r\n\0" , nmea_br_9600 , cs ) ;
@@ -435,6 +438,25 @@ void HAL_TIM_PeriodElapsedCallback ( TIM_HandleTypeDef *htim )
 			  HAL_PWREx_EnterSHUTDOWNMode () ;
 		  }
 	}
+}
+
+void send_command ( const char* c1 , bool save_nram )
+{
+	size_t len_c1 = strlen ( c1 ) ;
+	char cs = q1_check_xor ( c1 , len_c1 ) ;
+	char* c2 = (char*) malloc ( ( len_c1 + 7 ) * sizeof ( char ) ) ; // Dodanie 7 wynika z konieczności uwzględnienia znaków: prexi $ i sufix *XX\n\r\0 , gdzie XX to checksum
+	size_t len_c2 = strlen ( c2 ) ;
+	sprintf ( c2 , "$%s*%X\r\n\0" , c1 , cs ) ;
+	size_t len_2 = strlen ( c2 ) ;
+
+	HAL_UART_Transmit ( &huart2 , c2 , len_c2 , UART2_TX_TIMEOUT ) ;
+	my_gnss_sw_on() ;
+	my_tim_start () ;
+	HAL_Delay ( 1000 ) ;
+	HAL_UART_Transmit ( &huart5 , c2 , len_c2 , UART2_TX_TIMEOUT ) ;
+	if ( save_nram )
+		HAL_UART_Transmit ( &huart5 , save_nvram , strlen ( save_nvram ) , UART2_TX_TIMEOUT ) ;
+	HAL_UART_Transmit ( &huart5 , &terminal_rx_byte , 1 , UART2_TX_TIMEOUT ) ;
 }
 /* USER CODE END 4 */
 
