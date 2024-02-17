@@ -7,7 +7,7 @@
 
 #include "my_gnss.h"
 
-bool my_gnss_get_pair ( char* pair_response[2] )
+bool my_gnss_get_pair ( char pair_response[2][250] )
 {
 	bool result = false ;
 	char* 		nmea_pair_label = "$PAIR" ;
@@ -19,7 +19,7 @@ bool my_gnss_get_pair ( char* pair_response[2] )
 	my_tim_start () ;
 	while ( tim_seconds < 5 )
 	{
-		my_gnss_receive_byte ( &rx_byte, true ) ;
+		my_gnss_receive_byte ( &rx_byte, false ) ;
 		if ( rx_byte )
 		{
 			if ( my_nmea_message ( &rx_byte , nmea_message , &i_nmea ) == 2 )
@@ -31,7 +31,6 @@ bool my_gnss_get_pair ( char* pair_response[2] )
 						memcpy ( pair_response[i++] , nmea_message , UART_TX_MAX_BUFF_SIZE ) ;
 						if (i == 2 )
 						{
-							result = true ;
 							break ;
 						}
 					}
@@ -40,7 +39,7 @@ bool my_gnss_get_pair ( char* pair_response[2] )
 		}
 	}
 	my_tim_stop () ;
-	return result ;
+	return i > 0 ? true : false ;
 }
 
 

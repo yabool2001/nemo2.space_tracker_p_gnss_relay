@@ -47,19 +47,25 @@ UART_HandleTypeDef huart5;
 
 /* USER CODE BEGIN PV */
 const uint8_t* hello =  "\nHello nemo2.space tracker p gnss relay\n\n\0" ;
+const uint8_t* goodby =  "\nGoodby nemo2.space tracker p gnss relay\n\n\0" ;
 const char* full_cold_start = "$PAIR007*3D\r\n\0" ;
 const char* save_nvram = "$PAIR513*3D\r\n\0" ;
 const char* no_vtg = "PAIR062,5,0\0" ;
 const char* nmea_br_9600 = "PAIR864,0,0,9600\0" ;
 const char* get_nmea_br = "PAIR865,0,0\0" ;
+const char* get_nav_mode = "PAIR081\0" ;
+const char* get_sbas_status = "PAIR411\0" ; //PAIR_SBAS_GET_STATUS
+const char* get_fix_rate = "PAIR051\0" ; //PAIR_COMMON_GET_FIX_RATE
+const char* get_gll_rate = "PAIR063,1\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE PAIR_COMMON_GET_GLL_OUTPUT_RATE
 const char* nmea_end = "\r\n" ;
+char		my_gnss_command_response[2][250] = { {0} , {0} } ;
 uint8_t res[250] = { 0 } ;
 uint8_t gnss_rx_byte = 0 ;
 uint8_t terminal_rx_byte = 0 ;
 uint8_t len = 0 ;
 //TIM
 uint16_t tim_seconds_ths_sys_shutdown = 10 ;
-uint16_t tim_seconds = 0 ;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -122,6 +128,10 @@ int main(void)
   HAL_UART_Transmit ( &huart2 , hello , strlen ( hello ) , UART2_TX_TIMEOUT ) ;
 
   send_command ( get_nmea_br , false ) ;
+  send_command ( get_nav_mode , false ) ;
+  send_command ( get_sbas_status , false ) ;
+  send_command ( get_fix_rate , false ) ;
+  send_command ( get_gll_rate , false ) ;
 
 //  char cs = q1_check_xor ( nmea_br_9600 , strlen ( nmea_br_9600 ) ) ;
 //  sprintf ( res , "$%s*%X\r\n\0" , nmea_br_9600 , cs ) ;
@@ -135,14 +145,16 @@ int main(void)
 //  HAL_UART_Transmit ( &huart5 , &terminal_rx_byte , 1 , UART2_TX_TIMEOUT ) ;
 
 
-  char cscs = q1_check_xor ( get_nmea_br , strlen ( get_nmea_br ) ) ;
+  /*char cscs = q1_check_xor ( get_nmea_br , strlen ( get_nmea_br ) ) ;
   sprintf ( res , "$%s*%X\r\n\0" , get_nmea_br , cscs ) ;
   len = strlen ( (char*) res ) ;
   HAL_UART_Transmit ( &huart2 , res , len , UART2_TX_TIMEOUT ) ; // muszę dodać 6
   my_gnss_sw_on() ;
   my_tim_start () ;
   HAL_Delay ( 1000 ) ;
-  HAL_UART_Transmit ( &huart5 , res , len , UART2_TX_TIMEOUT ) ;
+  HAL_UART_Transmit ( &huart5 , res , len , UART2_TX_TIMEOUT ) ;*/
+  HAL_UART_Transmit ( &huart2 , goodby , strlen ( goodby ) , UART2_TX_TIMEOUT ) ;
+  HAL_PWREx_EnterSHUTDOWNMode () ;
   //HAL_UART_Transmit ( &huart5 , save_nvram , 13 , UART2_TX_TIMEOUT ) ;
   //HAL_UART_Transmit ( &huart5 , &terminal_rx_byte , 1 , UART2_TX_TIMEOUT ) ;
   /* USER CODE END 2 */
@@ -151,12 +163,12 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  HAL_UART_Receive ( &huart5 , &gnss_rx_byte , 1 , UART5_RX_TIMEOUT ) ;
+	  /*HAL_UART_Receive ( &huart5 , &gnss_rx_byte , 1 , UART5_RX_TIMEOUT ) ;
 	  if ( gnss_rx_byte )
 	  {
 		  HAL_UART_Transmit ( &huart2 , &gnss_rx_byte , 1 , UART5_TX_TIMEOUT ) ;
 		  gnss_rx_byte = 0 ;
-	  }
+	  }*/
 
     /* USER CODE END WHILE */
 
@@ -454,6 +466,19 @@ void send_command ( const char* c1 , bool save_nram )
 	my_gnss_sw_on() ;
 	HAL_Delay ( 1000 ) ;
 	HAL_UART_Transmit ( &huart5 , c2 , len_c2 , UART2_TX_TIMEOUT ) ;
+	my_gnss_command_response[0][0] = '\0' ;
+	my_gnss_command_response[1][0] = '\0' ;
+	if ( my_gnss_get_pair ( my_gnss_command_response ) )
+	{
+		for (uint8_t i = 0 ; i < 2 ; i++ )
+		{
+			if ( my_gnss_command_response[i][0] != '\0' ) ;
+			{
+				HAL_UART_Transmit ( &HUART_DBG , my_gnss_command_response[i] , strlen ( my_gnss_command_response[i] ) , UART2_TX_TIMEOUT ) ;
+				HAL_UART_Transmit ( &HUART_DBG , "\r\n" , 2 , UART2_TX_TIMEOUT ) ;
+			}
+		}
+	}
 	if ( save_nram )
 		send_command_save_nram () ;
 }
