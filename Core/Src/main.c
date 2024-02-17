@@ -73,6 +73,7 @@ void my_gnss_sw_on ( void ) ;
 void my_gnss_sw_off ( void ) ;
 unsigned char q1_check_xor ( const uint8_t* , uint8_t ) ;
 void send_command ( const char* , bool ) ;
+void send_command_save_nram () ;
 void my_ant_sw_pos ( uint8_t ) ;
 void my_tim_init ( void ) ;
 void my_tim_start ( void ) ;
@@ -451,13 +452,30 @@ void send_command ( const char* c1 , bool save_nram )
 
 	HAL_UART_Transmit ( &huart2 , c2 , len_c2 , UART2_TX_TIMEOUT ) ;
 	my_gnss_sw_on() ;
-	my_tim_start () ;
 	HAL_Delay ( 1000 ) ;
 	HAL_UART_Transmit ( &huart5 , c2 , len_c2 , UART2_TX_TIMEOUT ) ;
 	if ( save_nram )
-		HAL_UART_Transmit ( &huart5 , save_nvram , strlen ( save_nvram ) , UART2_TX_TIMEOUT ) ;
+		send_command_save_nram () ;
+}
+
+void send_command_save_nram ()
+{
+	size_t len_c2 = strlen ( save_nvram ) ;
+
+	HAL_UART_Transmit ( &huart2 , save_nvram , len_c2 , UART2_TX_TIMEOUT ) ;
+	my_gnss_sw_on() ;
+	HAL_Delay ( 1000 ) ;
+	HAL_UART_Transmit ( &huart5 , save_nvram , len_c2 , UART2_TX_TIMEOUT ) ;
 	HAL_UART_Transmit ( &huart5 , &terminal_rx_byte , 1 , UART2_TX_TIMEOUT ) ;
 }
+
+void my_gnss_receive_byte ( uint8_t* rx_byte , bool verbose )
+{
+	HAL_UART_Receive ( &HUART_GNSS , rx_byte , 1 , UART_RX_TIMEOUT ) ;
+	if ( verbose )
+		HAL_UART_Transmit ( &HUART_DBG , rx_byte , 1 , UART_TX_TIMEOUT ) ;
+}
+
 /* USER CODE END 4 */
 
 /**

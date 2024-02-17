@@ -1,0 +1,4 @@
+../my_libraries/Src/my_conversions.c:10:8:my_string2double_conv	24	static
+../my_libraries/Src/my_conversions.c:16:7:my_string2float_conv	24	static
+../my_libraries/Src/my_conversions.c:23:9:my_find_char_position	24	static
+../my_libraries/Src/my_conversions.c:41:5:my_conv_is_leap_year	16	static
