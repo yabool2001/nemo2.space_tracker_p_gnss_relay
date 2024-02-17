@@ -48,15 +48,16 @@ UART_HandleTypeDef huart5;
 /* USER CODE BEGIN PV */
 const uint8_t* hello =  "\nHello nemo2.space tracker p gnss relay\n\n\0" ;
 const uint8_t* goodby =  "\nGoodby nemo2.space tracker p gnss relay\n\n\0" ;
-const char* full_cold_start = "$PAIR007*3D\r\n\0" ;
 const char* save_nvram = "$PAIR513*3D\r\n\0" ;
-const char* no_vtg = "PAIR062,5,0\0" ;
-const char* nmea_br_9600 = "PAIR864,0,0,9600\0" ;
+const char* set_nmea_br_9600 = "PAIR864,0,0,9600\0" ;
 const char* get_nmea_br = "PAIR865,0,0\0" ;
 const char* get_nav_mode = "PAIR081\0" ;
-const char* get_sbas_status = "PAIR411\0" ; //PAIR_SBAS_GET_STATUS
+const char* get_sbas_status = "PAIR411\0" ; // PAIR_SBAS_GET_STATUS
 
-const char* get_fix_outputrate = "PAIR051\0" ; //PAIR_COMMON_GET_FIX_RATE
+const char* get_fix_outputrate = "PAIR051\0" ; // PAIR_COMMON_GET_FIX_RATE
+
+const char* set_gnss_search_mode = "PAIR066,1,0,1,0,1,0\0" ; // PAIR_COMMON_SET_GNSS_SEARCH_MODE GPS_Enabled , GLONASS_Disabled , Galileo_Enabled , BDS_Disabled , QZSS_Enabled
+const char* get_gnss_search_mode = "PAIR067\0" ; // PAIR_COMMON_SET_GNSS_SEARCH_MODE
 
 const char* get_gga_outputrate = "PAIR063,0\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GGA
 const char* get_gll_outputrate = "PAIR063,1\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GLL
@@ -143,39 +144,32 @@ int main(void)
   my_tim_init () ;
   HAL_UART_Transmit ( &huart2 , hello , strlen ( hello ) , UART2_TX_TIMEOUT ) ;
 
-  send_command ( get_nmea_br , false ) ;
-  send_command ( get_nav_mode , false ) ;
-  send_command ( get_sbas_status , false ) ;
-  send_command ( get_fix_outputrate , false ) ;
-  send_command ( set_gga_0_outputrate , false ) ;
-  send_command ( get_gga_outputrate , false ) ;
-  send_command ( set_vtg_0_outputrate , false ) ;
-  send_command ( get_vtg_outputrate , false ) ;
-  send_command_save_nram () ;
-//  char cs = q1_check_xor ( nmea_br_9600 , strlen ( nmea_br_9600 ) ) ;
-//  sprintf ( res , "$%s*%X\r\n\0" , nmea_br_9600 , cs ) ;
-//  len = strlen ( (char*) res ) ;
-//  HAL_UART_Transmit ( &huart2 , res , len , UART2_TX_TIMEOUT ) ; // muszę dodać 6
-//  my_gnss_sw_on() ;
-//  my_tim_start () ;
-//  HAL_Delay ( 1000 ) ;
-//  HAL_UART_Transmit ( &huart5 , res , len , UART2_TX_TIMEOUT ) ;
-//  HAL_UART_Transmit ( &huart5 , save_nvram , strlen ( save_nvram ) , UART2_TX_TIMEOUT ) ;
-//  HAL_UART_Transmit ( &huart5 , &terminal_rx_byte , 1 , UART2_TX_TIMEOUT ) ;
+  //send_command ( get_nav_mode , false ) ; // $PAIR081,0*2F
+  //HAL_Delay ( 1000 ) ;
+  //send_command ( get_sbas_status , false ) ; // $PAIR411,1*23
+  //HAL_Delay ( 1000 ) ;
+  //send_command ( get_fix_outputrate , false ) ; // $PAIR051,1000*13
+  //HAL_Delay ( 1000 ) ;
 
-
-  /*char cscs = q1_check_xor ( get_nmea_br , strlen ( get_nmea_br ) ) ;
-  sprintf ( res , "$%s*%X\r\n\0" , get_nmea_br , cscs ) ;
-  len = strlen ( (char*) res ) ;
-  HAL_UART_Transmit ( &huart2 , res , len , UART2_TX_TIMEOUT ) ; // muszę dodać 6
-  my_gnss_sw_on() ;
-  my_tim_start () ;
+  //send_command ( set_nmea_br_9600 , false ) ;
+  //HAL_Delay ( 1000 ) ;
+  //send_command ( get_nmea_br , false ) ; // $PAIR865,9600*12
+  //HAL_Delay ( 1000 ) ;
+  //send_command ( set_gnss_search_mode , false ) ;
+  //HAL_Delay ( 1000 ) ;
+  send_command ( get_gnss_search_mode , false ) ; // $PAIR067,1,0,1,0,1,0*3A
   HAL_Delay ( 1000 ) ;
-  HAL_UART_Transmit ( &huart5 , res , len , UART2_TX_TIMEOUT ) ;*/
+  //send_command ( set_gga_0_outputrate , false ) ;
+  //HAL_Delay ( 1000 ) ;
+  send_command ( get_gga_outputrate , false ) ;
+  HAL_Delay ( 1000 ) ;
+  //send_command ( set_vtg_0_outputrate , false ) ;
+  //HAL_Delay ( 1000 ) ;
+  send_command ( get_vtg_outputrate , false ) ;
+  HAL_Delay ( 1000 ) ;
+  //send_command_save_nram () ;
   HAL_UART_Transmit ( &huart2 , goodby , strlen ( goodby ) , UART2_TX_TIMEOUT ) ;
   HAL_PWREx_EnterSHUTDOWNMode () ;
-  //HAL_UART_Transmit ( &huart5 , save_nvram , 13 , UART2_TX_TIMEOUT ) ;
-  //HAL_UART_Transmit ( &huart5 , &terminal_rx_byte , 1 , UART2_TX_TIMEOUT ) ;
   /* USER CODE END 2 */
 
   /* Infinite loop */
