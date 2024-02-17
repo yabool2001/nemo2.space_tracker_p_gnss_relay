@@ -17,7 +17,7 @@ bool my_gnss_get_pair ( char pair_response[2][250] )
 	uint8_t		nmea_message[UART_TX_MAX_BUFF_SIZE] = {0} ;
 
 	my_tim_start () ;
-	while ( tim_seconds < 5 )
+	while ( tim_seconds < 10 )
 	{
 		my_gnss_receive_byte ( &rx_byte, false ) ;
 		if ( rx_byte )

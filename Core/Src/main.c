@@ -55,7 +55,9 @@ const char* nmea_br_9600 = "PAIR864,0,0,9600\0" ;
 const char* get_nmea_br = "PAIR865,0,0\0" ;
 const char* get_nav_mode = "PAIR081\0" ;
 const char* get_sbas_status = "PAIR411\0" ; //PAIR_SBAS_GET_STATUS
+
 const char* get_fix_outputrate = "PAIR051\0" ; //PAIR_COMMON_GET_FIX_RATE
+
 const char* get_gga_outputrate = "PAIR063,0\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GGA
 const char* get_gll_outputrate = "PAIR063,1\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GLL
 const char* get_gsa_outputrate = "PAIR063,2\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GSA
@@ -63,12 +65,12 @@ const char* get_gsv_outputrate = "PAIR063,3\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_
 const char* get_rmc_outputrate = "PAIR063,4\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE RMC
 const char* get_vtg_outputrate = "PAIR063,5\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE VTG
 
-const char* set_gga_0_outputrate = "PAIR063,0,0\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GGA
-const char* set_gll_1_outputrate = "PAIR063,1,1\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GLL
-const char* set_gsa_1_outputrate = "PAIR063,2,1\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GSA
-const char* set_gsv_1_outputrate = "PAIR063,3,1\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GSV
-const char* set_rmc_1_outputrate = "PAIR063,4,1\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE RMC
-const char* set_vtg_0_outputrate = "PAIR063,5,1\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE VTG
+const char* set_gga_0_outputrate = "PAIR062,0,0\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GGA
+const char* set_gll_1_outputrate = "PAIR062,1,1\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GLL
+const char* set_gsa_1_outputrate = "PAIR062,2,1\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GSA
+const char* set_gsv_1_outputrate = "PAIR062,3,1\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GSV
+const char* set_rmc_1_outputrate = "PAIR062,4,1\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE RMC
+const char* set_vtg_0_outputrate = "PAIR062,5,0\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE VTG
 
 const char* nmea_end = "\r\n" ;
 char		my_gnss_command_response[2][250] = { {0} , {0} } ;
@@ -145,13 +147,11 @@ int main(void)
   send_command ( get_nav_mode , false ) ;
   send_command ( get_sbas_status , false ) ;
   send_command ( get_fix_outputrate , false ) ;
+  send_command ( set_gga_0_outputrate , false ) ;
   send_command ( get_gga_outputrate , false ) ;
-  send_command ( get_gll_outputrate , false ) ;
-  send_command ( get_gsa_outputrate , false ) ;
-  send_command ( get_gsv_outputrate , false ) ;
-  send_command ( get_rmc_outputrate , false ) ;
+  send_command ( set_vtg_0_outputrate , false ) ;
   send_command ( get_vtg_outputrate , false ) ;
-
+  send_command_save_nram () ;
 //  char cs = q1_check_xor ( nmea_br_9600 , strlen ( nmea_br_9600 ) ) ;
 //  sprintf ( res , "$%s*%X\r\n\0" , nmea_br_9600 , cs ) ;
 //  len = strlen ( (char*) res ) ;
@@ -517,6 +517,7 @@ void get_command_result ()
 			}
 		}
 	}
+	HAL_UART_Transmit ( &HUART_DBG , "\r\n" , 2 , UART2_TX_TIMEOUT ) ;
 }
 
 void my_gnss_receive_byte ( uint8_t* rx_byte , bool verbose )
