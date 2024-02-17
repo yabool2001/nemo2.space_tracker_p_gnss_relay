@@ -55,8 +55,21 @@ const char* nmea_br_9600 = "PAIR864,0,0,9600\0" ;
 const char* get_nmea_br = "PAIR865,0,0\0" ;
 const char* get_nav_mode = "PAIR081\0" ;
 const char* get_sbas_status = "PAIR411\0" ; //PAIR_SBAS_GET_STATUS
-const char* get_fix_rate = "PAIR051\0" ; //PAIR_COMMON_GET_FIX_RATE
-const char* get_gll_rate = "PAIR063,1\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE PAIR_COMMON_GET_GLL_OUTPUT_RATE
+const char* get_fix_outputrate = "PAIR051\0" ; //PAIR_COMMON_GET_FIX_RATE
+const char* get_gga_outputrate = "PAIR063,0\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GGA
+const char* get_gll_outputrate = "PAIR063,1\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GLL
+const char* get_gsa_outputrate = "PAIR063,2\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GSA
+const char* get_gsv_outputrate = "PAIR063,3\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GSV
+const char* get_rmc_outputrate = "PAIR063,4\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE RMC
+const char* get_vtg_outputrate = "PAIR063,5\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE VTG
+
+const char* set_gga_0_outputrate = "PAIR063,0,0\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GGA
+const char* set_gll_1_outputrate = "PAIR063,1,1\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GLL
+const char* set_gsa_1_outputrate = "PAIR063,2,1\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GSA
+const char* set_gsv_1_outputrate = "PAIR063,3,1\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE GSV
+const char* set_rmc_1_outputrate = "PAIR063,4,1\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE RMC
+const char* set_vtg_0_outputrate = "PAIR063,5,1\0" ; // PAIR_COMMON_GET_NMEA_OUTPUT_RATE VTG
+
 const char* nmea_end = "\r\n" ;
 char		my_gnss_command_response[2][250] = { {0} , {0} } ;
 uint8_t res[250] = { 0 } ;
@@ -79,7 +92,8 @@ void my_gnss_sw_on ( void ) ;
 void my_gnss_sw_off ( void ) ;
 unsigned char q1_check_xor ( const uint8_t* , uint8_t ) ;
 void send_command ( const char* , bool ) ;
-void send_command_save_nram () ;
+void send_command_save_nram ( void ) ;
+void get_command_result ( void ) ;
 void my_ant_sw_pos ( uint8_t ) ;
 void my_tim_init ( void ) ;
 void my_tim_start ( void ) ;
@@ -130,8 +144,13 @@ int main(void)
   send_command ( get_nmea_br , false ) ;
   send_command ( get_nav_mode , false ) ;
   send_command ( get_sbas_status , false ) ;
-  send_command ( get_fix_rate , false ) ;
-  send_command ( get_gll_rate , false ) ;
+  send_command ( get_fix_outputrate , false ) ;
+  send_command ( get_gga_outputrate , false ) ;
+  send_command ( get_gll_outputrate , false ) ;
+  send_command ( get_gsa_outputrate , false ) ;
+  send_command ( get_gsv_outputrate , false ) ;
+  send_command ( get_rmc_outputrate , false ) ;
+  send_command ( get_vtg_outputrate , false ) ;
 
 //  char cs = q1_check_xor ( nmea_br_9600 , strlen ( nmea_br_9600 ) ) ;
 //  sprintf ( res , "$%s*%X\r\n\0" , nmea_br_9600 , cs ) ;
@@ -466,19 +485,7 @@ void send_command ( const char* c1 , bool save_nram )
 	my_gnss_sw_on() ;
 	HAL_Delay ( 1000 ) ;
 	HAL_UART_Transmit ( &huart5 , c2 , len_c2 , UART2_TX_TIMEOUT ) ;
-	my_gnss_command_response[0][0] = '\0' ;
-	my_gnss_command_response[1][0] = '\0' ;
-	if ( my_gnss_get_pair ( my_gnss_command_response ) )
-	{
-		for (uint8_t i = 0 ; i < 2 ; i++ )
-		{
-			if ( my_gnss_command_response[i][0] != '\0' ) ;
-			{
-				HAL_UART_Transmit ( &HUART_DBG , my_gnss_command_response[i] , strlen ( my_gnss_command_response[i] ) , UART2_TX_TIMEOUT ) ;
-				HAL_UART_Transmit ( &HUART_DBG , "\r\n" , 2 , UART2_TX_TIMEOUT ) ;
-			}
-		}
-	}
+	get_command_result () ;
 	if ( save_nram )
 		send_command_save_nram () ;
 }
@@ -492,6 +499,24 @@ void send_command_save_nram ()
 	HAL_Delay ( 1000 ) ;
 	HAL_UART_Transmit ( &huart5 , save_nvram , len_c2 , UART2_TX_TIMEOUT ) ;
 	HAL_UART_Transmit ( &huart5 , &terminal_rx_byte , 1 , UART2_TX_TIMEOUT ) ;
+	get_command_result () ;
+}
+
+void get_command_result ()
+{
+	my_gnss_command_response[0][0] = '\0' ;
+	my_gnss_command_response[1][0] = '\0' ;
+	if ( my_gnss_get_pair ( my_gnss_command_response ) )
+	{
+		for (uint8_t i = 0 ; i < 2 ; i++ )
+		{
+			if ( my_gnss_command_response[i][0] != '\0' ) ;
+			{
+				HAL_UART_Transmit ( &HUART_DBG , my_gnss_command_response[i] , strlen ( my_gnss_command_response[i] ) , UART2_TX_TIMEOUT ) ;
+				HAL_UART_Transmit ( &HUART_DBG , "\r\n" , 2 , UART2_TX_TIMEOUT ) ;
+			}
+		}
+	}
 }
 
 void my_gnss_receive_byte ( uint8_t* rx_byte , bool verbose )
