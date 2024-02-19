@@ -13,7 +13,7 @@
 ../Core/Src/main.c:451:6:my_tim_stop	1
 ../Core/Src/main.c:456:6:HAL_TIM_PeriodElapsedCallback	3
 ../Core/Src/main.c:469:6:send_command	2
-../Core/Src/main.c:487:6:send_command_save_nram	1
-../Core/Src/main.c:499:6:get_command_result	3
-../Core/Src/main.c:517:6:my_gnss_receive_byte	2
-../Core/Src/main.c:530:6:Error_Handler	1
+../Core/Src/main.c:488:6:send_command_save_nram	1
+../Core/Src/main.c:500:6:get_command_result	3
+../Core/Src/main.c:518:6:my_gnss_receive_byte	2
+../Core/Src/main.c:531:6:Error_Handler	1

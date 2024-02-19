@@ -13,7 +13,7 @@
 ../Core/Src/main.c:451:6:my_tim_stop	8	static
 ../Core/Src/main.c:456:6:HAL_TIM_PeriodElapsedCallback	16	static
 ../Core/Src/main.c:469:6:send_command	48	static
-../Core/Src/main.c:487:6:send_command_save_nram	16	static
-../Core/Src/main.c:499:6:get_command_result	24	static
-../Core/Src/main.c:517:6:my_gnss_receive_byte	16	static
-../Core/Src/main.c:530:6:Error_Handler	8	static,ignoring_inline_asm
+../Core/Src/main.c:488:6:send_command_save_nram	16	static
+../Core/Src/main.c:500:6:get_command_result	24	static
+../Core/Src/main.c:518:6:my_gnss_receive_byte	16	static
+../Core/Src/main.c:531:6:Error_Handler	8	static,ignoring_inline_asm

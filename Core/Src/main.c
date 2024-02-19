@@ -479,6 +479,7 @@ void send_command ( const char* c1 , bool save_nram )
 	my_gnss_sw_on() ;
 	HAL_Delay ( 1000 ) ;
 	HAL_UART_Transmit ( &huart5 , c2 , len_c2 , UART2_TX_TIMEOUT ) ;
+	free ( c2 ) ;
 	get_command_result () ;
 	if ( save_nram )
 		send_command_save_nram () ;
